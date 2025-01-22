@@ -10,7 +10,8 @@ Automated ETL pipeline using Kestra that:
 
 This workflow loads order data from CSV sources into PostgreSQL, joins it with product data, and transfers the combined results to MongoDB. It includes automatic triggering based on PostgreSQL conditions.
 
-![image (1) (1)](https://github.com/user-attachments/assets/e81f4c19-a9e7-4fa4-8079-37eab1e881d0)
+![WhatsApp Image 2025-01-22 at 22 59 43_870010c2](https://github.com/user-attachments/assets/6921cfd6-d465-4ad2-a7f2-50699d7c8378)
+
 
 
 ## Features
@@ -27,6 +28,8 @@ This workflow loads order data from CSV sources into PostgreSQL, joins it with p
   - JDBC PostgreSQL plugin
   - MongoDB plugin
   - Core plugins
+ 
+![image (1) (1)](https://github.com/user-attachments/assets/e81f4c19-a9e7-4fa4-8079-37eab1e881d0)
 
 ## Configuration
 Replace these template variables in `load_order_details_to_mongo.yaml`:
