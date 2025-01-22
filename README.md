@@ -36,3 +36,6 @@ Replace these template variables in `load_order_details_to_mongo.yaml`:
 # MongoDB Configuration
 {{mongo_url}}    # MongoDB connection string (e.g., mongodb://user:pass@localhost:27017)
 {{db_name}}      # MongoDB database name
+
+
+![image (1)](https://github.com/user-attachments/assets/ba426cfc-286a-4e7d-a767-b60da04850c8)
