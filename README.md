@@ -5,7 +5,7 @@ Automated ETL pipeline using Kestra that:
 3️⃣ Syncs results to MongoDB 
 4️⃣ Triggers via PostgreSQL table changes (30s polling) Key Features: Idempotent design • Cross-DB sync • Self-cleaning triggers • Bulk operations.
 
-![Pipeline]([https://datavidhya-static-content.s3.ap-south-1.amazonaws.com/architecture/DataVidhya+Projects+(1)_page-0001.jpg](https://drive.google.com/file/d/1WTH_Sq8nBIoGEzAOD8hxIfsVFEGKatm3/view?usp=sharing))
+
 # Order Details ETL Pipeline with Kestra
 
 This workflow loads order data from CSV sources into PostgreSQL, joins it with product data, and transfers the combined results to MongoDB. It includes automatic triggering based on PostgreSQL conditions.
