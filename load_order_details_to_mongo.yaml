@@ -1,0 +1,118 @@
+
+id: load_order_details_to_mongo
+namespace: company.team
+tasks:
+  - id: parallel_tasks
+    type: io.kestra.plugin.core.flow.Parallel
+    tasks:
+      - id: orders_sequential
+        type: io.kestra.plugin.core.flow.Sequential
+        tasks:
+          - id: http_download_orders
+            type: io.kestra.plugin.core.http.Download
+            uri: https://huggingface.co/datasets/kestra/datasets/raw/main/csv/orders.csv
+          - id: create_table_orders
+            type: io.kestra.plugin.jdbc.postgresql.Query
+            sql: |
+              CREATE TABLE IF NOT EXISTS orders(
+                order_id integer not null,
+                customer_name varchar(100) not null,
+                customer_email varchar(200) not null,
+                product_id integer not null,
+                price numeric(6,2),
+                quantity integer,
+                total numeric(6,2),
+                PRIMARY KEY(order_id)
+              )
+          - id: clear_records_orders
+            type: io.kestra.plugin.jdbc.postgresql.Query
+            sql: |
+              DELETE FROM orders WHERE 1=1
+          - id: update_data_orders
+            type: io.kestra.plugin.jdbc.postgresql.CopyIn
+            from: "{{ outputs.http_download_orders.uri }}"
+            table: orders
+            format: CSV
+            header: true
+
+      - id: products_sequential
+        type: io.kestra.plugin.core.flow.Sequential
+        tasks:
+          - id: http_download_products
+            type: io.kestra.plugin.core.http.Download
+            uri: https://huggingface.co/datasets/kestra/datasets/raw/main/csv/products.csv
+          - id: create_table_products
+            type: io.kestra.plugin.jdbc.postgresql.Query
+            sql: |
+              CREATE TABLE IF NOT EXISTS products(
+                product_id integer not null,
+                product_name varchar(150) not null,
+                product_category varchar(250) not null,
+                brand varchar(100) not null,
+                PRIMARY KEY(product_id)
+              )
+          - id: clear_records_products
+            type: io.kestra.plugin.jdbc.postgresql.Query
+            sql: |
+              DELETE FROM products WHERE 1=1
+          - id: update_data_products
+            type: io.kestra.plugin.jdbc.postgresql.CopyIn
+            from: "{{ outputs.http_download_products.uri }}"
+            table: products
+            format: CSV
+            header: true
+  - id: query_postgres
+    type: io.kestra.plugin.jdbc.postgresql.Query
+    sql: |
+        SELECT * FROM orders o
+        JOIN products p on o.product_id=p.product_id
+    store: TRUE
+
+  - id : clear_mongodb_records
+    type: io.kestra.plugin.mongodb.Delete
+    operation: "DELETE_MANY"   
+  - id: load_to_mongo
+    type: io.kestra.plugin.mongodb.Load
+    collection: "order_details"
+    from: "{{ outputs.query_postgres.uri }}" 
+
+  - id: clear_records_trigger_condition
+    type: io.kestra.plugin.jdbc.postgresql.Query
+    sql: |
+      DELETE FROM trigger_condition WHERE 1=1
+
+
+
+pluginDefaults: 
+  - type: io.kestra.plugin.jdbc.postgresql.Query
+    values: 
+      url: {{ url}}
+      username: {{username}}
+      password: {{password}}
+  - type: io.kestra.plugin.jdbc.postgresql.CopyIn
+    values: 
+      url: {{ url}}
+      username: {{username}}
+      password: {{password}}
+  - type: io.kestra.plugin.mongodb.Delete
+    values:
+      connection:
+        uri: {{mongo_url}}
+      database: {{db_name}}
+      collection: "order_details"
+  - type: io.kestra.plugin.mongodb.Load
+    values:
+      connection:
+        uri: {{mongo_url}}
+      database: {{db_name}}
+      collection: "order_details"
+
+
+triggers: 
+  - id: trigger
+    type: io.kestra.plugin.jdbc.postgresql.Trigger
+    url: {{ url}}
+    username: {{username}}
+    password: {{password}}
+    interval: "PT30S"
+    sql: "SELECT * FROM trigger_condition"
